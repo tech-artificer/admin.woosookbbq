@@ -65,7 +65,7 @@ jobs:
       with:
         host: "153.92.11.164"
         username: "u807263449"
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        ssh: ${{ secrets.HOSTINGER_SSH_KEY }}
         port: "65002"
         source: "deployment.tar.gz"
         target: "/tmp/"
@@ -75,7 +75,7 @@ jobs:
       with:
         host: "153.92.11.164"
         username: "u807263449"
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        ssh: ${{ secrets.HOSTINGER_SSH_KEY }}
         port: "65002"
         timeout: 300s
         script: |
