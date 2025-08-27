@@ -2,7 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import Configuration from '@/components/configuration/Index.vue';
+// import Configuration from '@/components/configuration/Index.vue';
 
 // const page = usePage();
 
@@ -33,7 +33,7 @@ defineProps<{
            <!-- <pre>{{ roles }}</pre> -->
             <!-- <pre>{{ permissions }}</pre> -->
              <div class="flex flex-col gap-2">
-                <Configuration />
+                <!-- <Configuration /> -->
              </div>
         </div>
     </AppLayout>

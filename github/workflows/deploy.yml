@@ -1,0 +1,185 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production  # Add environment protection
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, bcmath, zip, fileinfo, openssl, tokenizer
+        tools: composer
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Cache Composer dependencies
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: composer-
+
+    - name: Install Composer dependencies (production)
+      run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+    - name: Install NPM dependencies
+      run: npm ci
+
+    - name: Build production assets
+      run: npm run build
+
+    - name: Create deployment package
+      run: |
+        # Create deployment directory
+        mkdir -p deploy
+        
+        # Copy necessary files (excluding development files)
+        rsync -av --exclude='.git' \
+                  --exclude='.github' \
+                  --exclude='node_modules' \
+                  --exclude='tests' \
+                  --exclude='.env' \
+                  --exclude='.env.example' \
+                  --exclude='README.md' \
+                  --exclude='package*.json' \
+                  --exclude='vite.config.js' \
+                  --exclude='tsconfig.json' \
+                  --exclude='tailwind.config.js' \
+                  --exclude='postcss.config.js' \
+                  --exclude='resources/js' \
+                  --exclude='resources/css' \
+                  --exclude='resources/sass' \
+                  ./ deploy/
+        
+        # Create archive for upload
+        tar -czf deployment.tar.gz -C deploy .
+
+    - name: Upload deployment package
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.REMOTE_HOST }}
+        username: ${{ secrets.REMOTE_USER }}
+        password: ${{ secrets.REMOTE_PASSWORD }}  # Using password instead of key
+        port: ${{ secrets.REMOTE_PORT || 22 }}
+        source: "deployment.tar.gz"
+        target: "/tmp/"
+
+    - name: Deploy and configure application
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.REMOTE_HOST }}
+        username: ${{ secrets.REMOTE_USER }}
+        password: ${{ secrets.REMOTE_PASSWORD }}
+        port: ${{ secrets.REMOTE_PORT || 22 }}
+        timeout: 300s  # 5 minute timeout
+        script: |
+          set -e  # Exit on any error
+          
+          echo "Starting deployment..."
+          
+          # Navigate to web directory
+          cd ${{ secrets.REMOTE_PATH }}
+          
+          # Create backup of current deployment
+          if [ -d "current" ]; then
+            echo "Creating backup..."
+            mv current backup-$(date +%Y%m%d-%H%M%S)
+            # Keep only last 3 backups
+            ls -dt backup-* | tail -n +4 | xargs rm -rf
+          fi
+          
+          # Create new deployment directory
+          mkdir -p current
+          
+          # Extract new deployment
+          echo "Extracting new deployment..."
+          tar -xzf /tmp/deployment.tar.gz -C current/
+          rm /tmp/deployment.tar.gz
+          
+          # Navigate to new deployment
+          cd current
+          
+          # Copy production environment file (ensure this exists on your server)
+          if [ -f "../.env.production" ]; then
+            cp ../.env.production .env
+            echo "Production .env copied"
+          else
+            echo "WARNING: No .env.production file found!"
+          fi
+          
+          # Set correct permissions
+          echo "Setting permissions..."
+          chmod -R 755 storage bootstrap/cache
+          chmod -R 777 storage/logs storage/framework storage/app
+          
+          # Clear all Laravel caches
+          echo "Clearing caches..."
+          php artisan config:clear || true
+          php artisan cache:clear || true
+          php artisan route:clear || true
+          php artisan view:clear || true
+          
+          # Run database migrations
+          echo "Running migrations..."
+          php artisan migrate --force
+          
+          # Cache Laravel configurations for production
+          echo "Caching configurations..."
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          
+          # Optimize Laravel for production
+          echo "Optimizing application..."
+          php artisan optimize
+          
+          # Verify deployment
+          echo "Verifying deployment..."
+          if php artisan about > /dev/null 2>&1; then
+            echo "✅ Deployment completed successfully!"
+          else
+            echo "❌ Deployment verification failed!"
+            exit 1
+          fi
+          
+          echo "Production deployment finished!"
+
+    - name: Notify deployment status
+      if: failure()
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.REMOTE_HOST }}
+        username: ${{ secrets.REMOTE_USER }}
+        password: ${{ secrets.REMOTE_PASSWORD }}
+        port: ${{ secrets.REMOTE_PORT || 22 }}
+        script: |
+          echo "🚨 DEPLOYMENT FAILED - Rolling back..."
+          cd ${{ secrets.REMOTE_PATH }}
+          
+          # Restore from backup if deployment failed
+          if [ -d "current" ]; then
+            rm -rf current || true
+          fi
+          
+          # Find latest backup and restore
+          LATEST_BACKUP=$(ls -dt backup-* 2>/dev/null | head -n 1)
+          if [ -n "$LATEST_BACKUP" ]; then
+            mv "$LATEST_BACKUP" current
+            echo "Rolled back to: $LATEST_BACKUP"
+          else
+            echo "No backup found for rollback!"
+          fi
