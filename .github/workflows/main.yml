@@ -8,15 +8,22 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
+      - name: Deploy to Hostinger via SSH
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          ssh-private-key: ${{ secrets.HOSTINGER_SSH_KEY }}
-
-      - name: Deploy to Hostinger
-        run: |
-          ssh -o StrictHostKeyChecking=no u807263449@153.92.11.164 "cd ~/home/u807263449/domains/woosookbbq.com/public_html/admin && git pull origin main && composer install --no-dev && php artisan migrate --force"
+          host: 153.92.11.164       # e.g. 123.45.67.89 or srv123.main-hosting.eu
+          username: u807263449   # e.g. u123456789
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}     # <-- this is your private key
+          port: 22
+          script: |
+            cd ~/domains/woosookbbq.com/public_html/admin
+            git pull origin main
+            composer install --no-dev --optimize-autoloader
+            php artisan migrate --force
+            php artisan config:clear
+            php artisan cache:clear
