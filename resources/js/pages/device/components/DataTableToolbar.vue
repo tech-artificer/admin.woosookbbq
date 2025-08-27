@@ -7,7 +7,7 @@ import { Plus } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-import { roles, statuses } from '../data/data'
+// import { roles, statuses } from '../data/data'
 import DataTableFacetedFilter from '@/components/users/components/DataTableFacetedFilter.vue'
 // import DataTableViewOptions from '@/components/users/components//DataTableViewOptions.vue'
 import DataTableAddUser from '@/components/users/components//DataTableAddUser.vue'
@@ -31,7 +31,7 @@ const isFiltered = computed(() => props.table.getState().columnFilters.length > 
         class="h-8 w-[150px] lg:w-[250px]"
         @input="table.getColumn('name')?.setFilterValue($event.target.value)"
       />
-      <DataTableFacetedFilter
+      <!-- <DataTableFacetedFilter
         v-if="table.getColumn('status')"
         :column="table.getColumn('status')"
         title="Statuses"
@@ -42,7 +42,7 @@ const isFiltered = computed(() => props.table.getState().columnFilters.length > 
         :column="table.getColumn('role')"
         title="Roles"
         :options="roles"
-      />
+      /> -->
 
       <Button
         v-if="isFiltered"

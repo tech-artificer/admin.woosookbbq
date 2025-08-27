@@ -5,7 +5,6 @@ import { Head } from '@inertiajs/vue3';
 import { Table } from '@/types/models';
 import { getTableColumns } from '@/pages/table/table-columns';
 import { TableStatus } from '@/types/enums';
-// import AppTable from '@/components/datatable/AppTable.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {

@@ -30,3 +30,4 @@ docker/
 !bootstrap/cache/.gitignore
 !/bootstrap/cache/
 /bootstrap/cache/*
+vendor.zip
