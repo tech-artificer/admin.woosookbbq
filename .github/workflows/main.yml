@@ -1,9 +1,9 @@
-name: Deploy to Hostinger
+name: Deploy Laravel to Hostinger
 
 on:
   push:
     branches:
-      - main
+      - main   # only deploy when pushing to main
 
 jobs:
   deploy:
@@ -16,14 +16,33 @@ jobs:
       - name: Deploy to Hostinger via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 153.92.11.164       # e.g. 123.45.67.89 or srv123.main-hosting.eu
-          username: u807263449   # e.g. u123456789
-          key: ${{ secrets.HOSTINGER_SSH_KEY }}     # <-- this is your private key
-          port: 65002
+          host: ${{ secrets.REMOTE_HOST }}       # e.g. 153.92.11.164
+          username: ${{ secrets.REMOTE_USER }}   # e.g. u807263449
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}     # private key (your id_rsa_hostinger)
+          port: ${{ secrets.REMOTE_PORT }}       # e.g. 65002
           script: |
+            set -e
             cd ~/domains/woosookbbq.com/public_html/admin
-            git pull origin main
+
+            # Clone on first run, pull afterwards
+            if [ ! -d .git ]; then
+              git clone -b main git@github.com:tech-artificer/admin.woosookbbq.git .
+            else
+              git reset --hard
+              git pull origin main
+            fi
+
+            # Install PHP dependencies
             composer install --no-dev --optimize-autoloader
+
+            # Build frontend if needed
+            if [ -f package.json ]; then
+              npm install
+              npm run build
+            fi
+
+            # Laravel commands
             php artisan migrate --force
             php artisan config:clear
             php artisan cache:clear
+            php artisan route:clear
