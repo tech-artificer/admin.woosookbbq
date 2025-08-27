@@ -19,7 +19,7 @@ jobs:
           host: 153.92.11.164       # e.g. 123.45.67.89 or srv123.main-hosting.eu
           username: u807263449   # e.g. u123456789
           key: ${{ secrets.HOSTINGER_SSH_KEY }}     # <-- this is your private key
-          port: 22
+          port: 65002
           script: |
             cd ~/domains/woosookbbq.com/public_html/admin
             git pull origin main
