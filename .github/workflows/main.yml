@@ -63,20 +63,20 @@ jobs:
     - name: Upload deployment package
       uses: appleboy/scp-action@v0.1.7
       with:
-        host: ${{ secrets.REMOTE_HOST }}
-        username: ${{ secrets.REMOTE_USER }}
-        password: ${{ secrets.REMOTE_PASSWORD }}
-        port: ${{ secrets.REMOTE_PORT || 22 }}
+        host: "153.92.11.164"
+        username: "u807263449"
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: "65002"
         source: "deployment.tar.gz"
         target: "/tmp/"
 
     - name: Deploy and configure application
       uses: appleboy/ssh-action@v1.0.3
       with:
-        host: ${{ secrets.REMOTE_HOST }}
-        username: ${{ secrets.REMOTE_USER }}
-        key: ${{ secrets.HOSTINGER_SSH_KEY }}
-        port: ${{ secrets.REMOTE_PORT || 22 }}
+        host: "153.92.11.164"
+        username: "u807263449"
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: "65002"
         timeout: 300s
         script: |
           set -e
