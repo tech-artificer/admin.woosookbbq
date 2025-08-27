@@ -1,179 +1,22 @@
-name: Deploy to Production
+name: Deploy to Hostinger
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
-        extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, bcmath, zip, fileinfo, openssl, tokenizer
-        tools: composer
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.HOSTINGER_SSH_KEY }}
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-
-    - name: Install Composer dependencies (production)
-      run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --no-scripts
-
-    - name: Install NPM dependencies
-      run: npm ci
-
-    - name: Build production assets
-      run: npm run build
-
-    - name: Create deployment package
-      run: |
-        # Create deployment directory
-        mkdir -p deploy
-        
-        # Copy necessary files (excluding development files)
-        rsync -av --exclude='.git' \
-                  --exclude='.github' \
-                  --exclude='node_modules' \
-                  --exclude='tests' \
-                  --exclude='.env' \
-                  --exclude='.env.example' \
-                  --exclude='README.md' \
-                  --exclude='package*.json' \
-                  --exclude='vite.config.js' \
-                  --exclude='tsconfig.json' \
-                  --exclude='tailwind.config.js' \
-                  --exclude='postcss.config.js' \
-                  --exclude='resources/js' \
-                  --exclude='resources/css' \
-                  --exclude='resources/sass' \
-                  ./ deploy/
-        
-        # Create archive for upload
-        tar -czf deployment.tar.gz -C deploy .
-
-    - name: Upload deployment package
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: "153.92.11.164"
-        username: "u807263449"
-        ssh: ${{ secrets.HOSTINGER_SSH_KEY }}
-        port: "65002"
-        source: "deployment.tar.gz"
-        target: "/tmp/"
-
-    - name: Deploy and configure application
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: "153.92.11.164"
-        username: "u807263449"
-        ssh: ${{ secrets.HOSTINGER_SSH_KEY }}
-        port: "65002"
-        timeout: 300s
-        script: |
-          set -e
-          
-          echo "🚀 Starting deployment..."
-          
-          # Navigate to web directory
-          cd ${{ secrets.REMOTE_PATH }}
-          
-          # Create backup of current deployment
-          if [ -d "app" ]; then
-            echo "📦 Creating backup..."
-            mkdir -p backups
-            tar -czf "backups/backup-$(date +%Y%m%d-%H%M%S).tar.gz" --exclude=storage/logs --exclude=storage/framework/cache --exclude=storage/framework/sessions app bootstrap config database public resources routes vendor artisan composer.json composer.lock || true
-            # Keep only last 3 backups
-            cd backups && ls -dt backup-*.tar.gz | tail -n +4 | xargs rm -f && cd ..
-          fi
-          
-          # Extract new deployment
-          echo "📂 Extracting new deployment..."
-          tar -xzf /tmp/deployment.tar.gz
-          rm /tmp/deployment.tar.gz
-          
-          # Copy production environment file
-          if [ -f "../.env.production" ]; then
-            cp ../.env.production .env
-            echo "✅ Production .env copied"
-          else
-            echo "⚠️ WARNING: No .env.production file found!"
-            exit 1
-          fi
-          
-          # Set correct permissions
-          echo "🔐 Setting permissions..."
-          chmod -R 755 storage bootstrap/cache
-          chmod -R 777 storage/logs storage/framework storage/app
-          
-          # Run composer scripts now that .env exists
-          echo "📦 Running composer post-install scripts..."
-          composer run-script post-autoload-dump --no-interaction || echo "Composer scripts completed with warnings"
-          
-          # Clear all Laravel caches
-          echo "🧹 Clearing caches..."
-          php artisan config:clear || true
-          php artisan cache:clear || true
-          php artisan route:clear || true
-          php artisan view:clear || true
-          
-          # Generate app key if needed
-          echo "🔑 Ensuring app key exists..."
-          php artisan key:generate --force || true
-          
-          # Run database migrations
-          echo "🗄️ Running migrations..."
-          php artisan migrate --force
-          
-          # Cache Laravel configurations for production
-          echo "⚡ Caching configurations..."
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
-          
-          # Optimize Laravel for production
-          echo "🚀 Optimizing application..."
-          php artisan optimize
-          
-          # Verify deployment
-          echo "✨ Verifying deployment..."
-          if php artisan about > /dev/null 2>&1; then
-            echo "🎉 Deployment completed successfully!"
-          else
-            echo "❌ Deployment verification failed!"
-            exit 1
-          fi
-
-    - name: Rollback on failure
-      if: failure()
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.REMOTE_HOST }}
-        username: ${{ secrets.REMOTE_USER }}
-        password: ${{ secrets.REMOTE_PASSWORD }}
-        port: ${{ secrets.REMOTE_PORT || 22 }}
-        script: |
-          echo "🚨 DEPLOYMENT FAILED - Attempting rollback..."
-          cd ${{ secrets.REMOTE_PATH }}
-          
-          # Find and restore latest backup
-          if [ -d "backups" ]; then
-            LATEST_BACKUP=$(ls -dt backups/backup-*.tar.gz 2>/dev/null | head -n 1)
-            if [ -n "$LATEST_BACKUP" ]; then
-              echo "📦 Restoring from: $LATEST_BACKUP"
-              tar -xzf "$LATEST_BACKUP"
-              echo "✅ Rollback completed"
-            else
-              echo "❌ No backup found for rollback!"
-            fi
-          else
-            echo "❌ No backups directory found!"
-          fi
+      - name: Deploy to Hostinger
+        run: |
+          ssh -o StrictHostKeyChecking=no u807263449@153.92.11.164 "cd ~/home/u807263449/domains/woosookbbq.com/public_html/admin && git pull origin main && composer install --no-dev && php artisan migrate --force"
