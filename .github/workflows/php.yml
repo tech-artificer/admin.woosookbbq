@@ -27,9 +27,14 @@ jobs:
         with:
           node-version: 20
 
-      # Install composer deps
+      # Install composer 
       - name: Install Composer dependencies
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+      
+      - name: Ensure bootstrap/cache exists
+        run: |
+          mkdir -p bootstrap/cache
+          chmod -R 775 bootstrap/cache
 
       # Install npm deps & build assets
       - name: Install NPM dependencies
