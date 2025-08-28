@@ -63,7 +63,8 @@ return [
             ]) : [],
         ],
 
-        'pos' => [
+        'pos' => app()->environment(['production', 'local'])
+    ? [
             'driver' => 'mysql',
             // 'host' => env('DB_POS_HOST', '127.0.0.1'),
             'host' => env('DB_POS_HOST', 'localhost'),
@@ -77,7 +78,7 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-        ],
+        ] : [],
 
         'mariadb' => [
             'driver' => 'mariadb',
