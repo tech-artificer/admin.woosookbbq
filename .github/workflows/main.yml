@@ -24,6 +24,11 @@ jobs:
           extensions: mbstring, bcmath, pdo_mysql
           tools: composer
 
+      # Ensure bootstrap/cache exists
+      - name: Prepare Laravel Directories
+        run: |
+          mkdir -p bootstrap/cache
+          chmod -R 777 bootstrap/cache
       # 3. Install Composer dependencies (optimized for production)
       - name: Install Composer Dependencies
         run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
