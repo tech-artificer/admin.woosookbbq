@@ -63,11 +63,9 @@ return [
             ]) : [],
         ],
 
-        'pos' => app()->environment(['production', 'local'])
-    ? [
+        'pos' => env('DB_POS_ENABLED', false) ? [
             'driver' => 'mysql',
-            // 'host' => env('DB_POS_HOST', '127.0.0.1'),
-            'host' => env('DB_POS_HOST', 'localhost'),
+            'host' => env('DB_POS_HOST', '127.0.0.1'),
             'port' => env('DB_POS_PORT', '3306'),
             'database' => env('DB_POS_DATABASE', 'krypton_woosoo'),
             'username' => env('DB_POS_USERNAME', 'root'),
