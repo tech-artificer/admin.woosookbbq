@@ -1,1 +1,0 @@
-import{d as o,a as s,o as t,c as a,b as n}from"./app-DbhAseKL.js";const _=o({__name:"Branches",props:{title:{},description:{}},setup(r){const e=s();return t(()=>{e.props.server}),(p,c)=>(n(),a("div"))}});export{_ as default};
