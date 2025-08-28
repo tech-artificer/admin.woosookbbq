@@ -4,18 +4,19 @@ import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { columns } from '@/components/users/components/columns';
 import UserTable from '@/components/users/Index.vue';
+import { User } from '@/types/models';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Users',
-        href: '/users',
+        title: 'User Management',
+        href: route('users.index'),
     },
 ];
 
 defineProps<{
     title: string;
     description: string;
-    users: any[],
+    users: User[],
 }>()    
 
 </script>
