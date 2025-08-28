@@ -1,1 +1,55 @@
 
+name: Laravel Build & Optimize
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Setup PHP
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, bcmath, pdo_mysql
+          tools: composer
+
+      # 3. Install Composer dependencies (optimized for production)
+      - name: Install Composer Dependencies
+        run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+      # 4. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 5. Install NPM dependencies
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      # 6. Build frontend assets
+      - name: Build Frontend
+        run: npm run build
+
+      # 7. Run Laravel optimizations
+      - name: Laravel Optimize
+        run: |
+          php artisan config:clear
+          php artisan config:cache
+          php artisan route:clear
+          php artisan route:cache
+          php artisan view:clear
+          php artisan view:cache
+          php artisan event:cache
