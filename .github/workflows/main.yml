@@ -1,60 +1,52 @@
-
-name: Laravel Build & Optimize
+name: Woosoo Admin Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout code
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Setup PHP
+      # PHP setup
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
-          extensions: mbstring, bcmath, pdo_mysql
-          tools: composer
+          php-version: 8.3
+          extensions: mbstring, bcmath, intl, mysql
 
-      # Ensure bootstrap/cache exists
-      - name: Prepare Laravel Directories
-        run: |
-          mkdir -p bootstrap/cache
-          chmod -R 777 bootstrap/cache
-      # 3. Install Composer dependencies (optimized for production)
-      - name: Install Composer Dependencies
-        run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
-
-      # 4. Setup Node.js
+      # Node setup
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: 20
 
-      # 5. Install NPM dependencies
-      - name: Install NPM Dependencies
+      # Install composer deps
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      # Install npm deps & build assets
+      - name: Install NPM dependencies
         run: npm ci
 
-      # 6. Build frontend assets
-      - name: Build Frontend
+      - name: Build assets
         run: npm run build
 
-      # 7. Run Laravel optimizations
-      - name: Laravel Optimize
+      # Copy CI environment file
+      - name: Setup environment
+        run: cp .env.ci .env
+
+      # Optimize Laravel
+      - name: Optimize Laravel
         run: |
           php artisan config:clear
+          php artisan cache:clear
           php artisan config:cache
-          php artisan route:clear
           php artisan route:cache
-          php artisan view:clear
           php artisan view:cache
-          php artisan event:cache
