@@ -45,10 +45,10 @@ class AppServiceProvider extends ServiceProvider
         JsonResource::withoutWrapping();
 
         // // Share context-based sessions (from your Krypton service)
-        Inertia::share($contextService->getCurrentSessions());
+        // Inertia::share($contextService->getCurrentSessions());
 
         // // Roles & Permissions (moved to dedicated private method for clarity)
-        $this->shareRolesAndPermissions();
+        // $this->shareRolesAndPermissions();
 
         // // API Docs (Scramble config)
         // Scramble::configure()
@@ -61,7 +61,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('viewPulse', fn (User $user) => $user->is_admin);
 
         // // 🔹 Observers
-        OrderUpdateLog::observe(OrderUpdateLogObserver::class);
+        // OrderUpdateLog::observe(OrderUpdateLogObserver::class);
     }
 
     /**

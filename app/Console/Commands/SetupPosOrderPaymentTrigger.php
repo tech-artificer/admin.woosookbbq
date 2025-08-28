@@ -29,6 +29,10 @@ class SetupPosOrderPaymentTrigger extends Command
     {
         $connection = DB::connection('pos');
         
+        if (!$connection) {
+            $this->error('POS database connection not found.');
+            return;
+        }
         if (!Schema::connection('mysql')->hasTable('order_update_logs')) {
             Schema::connection('mysql')->create('order_update_logs', function ($table) {
                 $table->id();
