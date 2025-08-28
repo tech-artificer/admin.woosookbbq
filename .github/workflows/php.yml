@@ -35,10 +35,7 @@ jobs:
           chmod -R 775 bootstrap/cache
 
 
-      # Install composer deps
-      - name: Install Composer dependencies
-        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-        
+    
 
       # Install npm deps & build assets
       - name: Install NPM dependencies
