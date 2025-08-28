@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
-        channels: __DIR__.'/../routes/channels.php',
+        // channels: __DIR__.'/../routes/channels.php',
         health: '/up',
     )
     // ->withBroadcasting(
@@ -45,25 +45,25 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        $middleware->statefulApi();
+        // $middleware->statefulApi();
     })
     
     ->withExceptions(function (Exceptions $exceptions) {
        $exceptions->render(function (QueryException $exception, Request $request) {
 
-            if( $request->is('api/*') ) {
+            // if( $request->is('api/*') ) {
 
-                if ($exception->errorInfo[1] == 1062) {
-                    return response()->json([
-                        'message' => 'Duplicate Entry Detected.',
-                    ], 409);
-                }
+            //     if ($exception->errorInfo[1] == 1062) {
+            //         return response()->json([
+            //             'message' => 'Duplicate Entry Detected.',
+            //         ], 409);
+            //     }
 
-                //  return response()->json([
-                //     'success' => false,
-                //     'message' => 'Error Occurred.',
-                // ]);
-            }
+            //     //  return response()->json([
+            //     //     'success' => false,
+            //     //     'message' => 'Error Occurred.',
+            //     // ]);
+            // }
            
            
 
