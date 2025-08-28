@@ -72,3 +72,20 @@ jobs:
           php artisan config:cache
           php artisan route:cache
           php artisan view:cache
+      
+      # 11. Set Environment Variables
+      - name: Setup environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: woosoo_admin
+          DB_USERNAME: root
+          DB_PASSWORD: 
+
+      # 12. Run Migrations
+      - name: Run migrations
+        run: php artisan migrate --force --database=mysql
