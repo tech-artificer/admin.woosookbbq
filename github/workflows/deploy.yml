@@ -1,91 +1,52 @@
-name: Laravel Build
+name: Woosoo Admin Build
 
 on:
   push:
-    branches: [ "main", "staging" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main", "staging" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout code
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Setup PHP
+      # PHP setup
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
-          extensions: mbstring, bcmath, pdo_mysql
-          tools: composer
+          php-version: 8.3
+          extensions: mbstring, bcmath, intl, mysql
 
-      # 3. Cache Composer dependencies
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-
-
-      # 4. Ensure bootstrap/cache exists
-      - name: Prepare Laravel Directories
-        run: |
-          mkdir -p bootstrap/cache
-          chmod -R 777 bootstrap/cache
-
-      # 5. Install Composer dependencies (production optimized)
-      - name: Install Composer dependencies
-        run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
-
-      # 6. Cache Node modules
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      # 7. Setup Node.js
+      # Node setup
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
 
-      # 8. Install NPM dependencies
+      # Install composer deps
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      # Install npm deps & build assets
       - name: Install NPM dependencies
         run: npm ci
 
-      # 9. Build assets with Vite
-      - name: Build Frontend Assets
+      - name: Build assets
         run: npm run build
 
-      # 10. Laravel Optimizations
+      # Copy CI environment file
+      - name: Setup environment
+        run: cp .env.ci .env
+
+      # Optimize Laravel
       - name: Optimize Laravel
         run: |
           php artisan config:clear
+          php artisan cache:clear
           php artisan config:cache
           php artisan route:cache
           php artisan view:cache
-      
-      # 11. Set Environment Variables
-      - name: Setup environment
-        run: |
-          cp .env.example .env
-          php artisan key:generate
-        env:
-          DB_CONNECTION: mysql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: woosoo_admin
-          DB_USERNAME: root
-          DB_PASSWORD: 
-
-      # 12. Run Migrations
-      - name: Run migrations
-        run: php artisan migrate --force --database=mysql
