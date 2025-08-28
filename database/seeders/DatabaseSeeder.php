@@ -61,26 +61,25 @@ class DatabaseSeeder extends Seeder
             'roles.create',
             'roles.edit',
             'roles.delete',
-            // Assign Role
             'roles.assign',
             'roles.remove',
             // assign permission to role
             'permissions.assign',
             'permissions.remove',
             // Menus
-            'menus.view',
-            'menus.create',
-            'menus.edit',
-            'menus.delete',
-            'menus.upload.image',
+            // 'menus.view',
+            // 'menus.create',
+            // 'menus.edit',
+            // 'menus.delete',
+            // 'menus.upload.image',
             // Orders
-            'orders.view',
-            'orders.create',
-            'orders.edit',
-            'orders.delete',
-            'orders.cancel',
-            'orders.complete',
-            'orders.void',
+            // 'orders.view',
+            // 'orders.create',
+            // 'orders.edit',
+            // 'orders.delete',
+            // 'orders.cancel',
+            // 'orders.complete',
+            // 'orders.void',
             // Device
             'devices.view',
             'devices.register',
@@ -94,39 +93,9 @@ class DatabaseSeeder extends Seeder
             'branches.delete',
             // Reports
             'reports.sales.view',
-            'reports.sales.export',
-
-            // Menu & Categories
-            // 'view menu',
-            // 'create menu',
-            // 'edit menu',
-            // 'delete menu',
-            // 'manage categories',
-
-            
-
-            // 'view orders',
-            // 'update order status',
-            // 'cancel order',
-            // 'void order',
-            // 'apply discount',
-            // 'refund payment',
-
-            
-
-           
-
-            // // Tables / Sessions
-            // 'view tables',
-            // 'assign table',
-            // 'close table',
-
-            // Payments
-            // 'process payment',
-            // 'void payment',
-            // 'print receipt',
-
-            
+            'reports.sales.export',  
+            'reports.revenue.view',
+            'reports.revenue.export',
         ];
 
         foreach ($permissions as $permission) {
@@ -144,13 +113,13 @@ class DatabaseSeeder extends Seeder
         $staff = Role::firstOrCreate(['name' => 'Staff']);
 
         $owner->givePermissionTo(Permission::all());
-        $accountant->givePermissionTo(['reports.sales.view', 'reports.sales.export']);
+        $accountant->givePermissionTo(['reports.sales.view', 'reports.sales.export', 'reports.revenue.view', 'reports.revenue.export']);
         $manager->givePermissionTo([
-            'orders.view', 'orders.create', 'orders.edit', 'orders.delete', 'orders.cancel', 'orders.complete', 'orders.void',
-            'devices.view', 'devices.register', 'devices.assign.table', 'devices.unassign.table', 'devices.delete',
+            // 'orders.view', 'orders.create', 'orders.edit', 'orders.delete', 'orders.cancel', 'orders.complete', 'orders.void',
+            // 'devices.view', 'devices.register', 'devices.assign.table', 'devices.unassign.table', 'devices.delete',
             'branches.view', 'branches.create', 'branches.edit', 'branches.delete',
             'reports.sales.view', 'reports.sales.export',
-            'menus.view', 'menus.create', 'menus.edit', 'menus.delete', 'menus.upload.image',
+            // 'menus.view', 'menus.create', 'menus.edit', 'menus.delete', 'menus.upload.image',
             'users.view', 'users.create', 'users.edit', 'users.delete',
         ]);
         // 

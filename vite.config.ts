@@ -26,4 +26,9 @@ export default defineConfig({
             '@': path.resolve(__dirname, './resources/js'),
         },
     },
+    build: {
+        outDir: 'build', // put build folder beside index.php
+        manifest: true,
+        emptyOutDir: true,
+    }
 });

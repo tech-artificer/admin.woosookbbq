@@ -12,7 +12,8 @@ import {
     Minus, 
     TrendingUp, 
     Split, 
-    Lock 
+    Lock,
+    HandCoins,
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
@@ -73,15 +74,15 @@ const mainNavItems: NavItem[] = [
 
 const configNavItems: NavItem[] = [
     {
-        title: 'Roles & Permissions',
-        href: '/roles/permissions',
+        title: 'Access Control',
+        href: route('accessibility.index'),
         icon: Lock,
         isActive: false,
         hasSubItems: false,
     }, 
     {
         title: 'Manage Branches',
-        href: '/configuration/branches',
+        href: route('branches.index'),
         icon: Split,
         isActive: false,
         hasSubItems: false,
@@ -90,9 +91,16 @@ const configNavItems: NavItem[] = [
 
 const reportNavItems: NavItem[] = [
     {
-        title: 'Sales Report',
+        title: 'Sales',
         href: route('reports.sales'),
         icon: TrendingUp,
+        isActive: false,
+        hasSubItems: false,
+    }, 
+    {
+        title: 'Revenue',
+        href: '#',
+        icon: HandCoins,
         isActive: false,
         hasSubItems: false,
     }, 
@@ -116,10 +124,11 @@ const reportNavItems: NavItem[] = [
 
         <SidebarContent>
             <NavMain :items="mainNavItems" title="Main"  />
-        </SidebarContent>
-        <SidebarFooter>
             <NavMain :items="configNavItems" title="Configuration" />
             <NavMain :items="reportNavItems" title="Reports" />
+        </SidebarContent>
+        <SidebarFooter>
+          
         </SidebarFooter>
     </Sidebar>
     <slot />

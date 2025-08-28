@@ -11,6 +11,7 @@ use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Schema;
 
 use App\Models\User;
 use App\Helpers\AppEnvironment;
@@ -38,26 +39,28 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(KryptonContextService $contextService): void
     {
+        Schema::disableForeignKeyConstraints();
+        Schema::enableForeignKeyConstraints();
         // Always return plain JSON (no "data" wrapper)
         JsonResource::withoutWrapping();
 
-        // Share context-based sessions (from your Krypton service)
+        // // Share context-based sessions (from your Krypton service)
         Inertia::share($contextService->getCurrentSessions());
 
-        // Roles & Permissions (moved to dedicated private method for clarity)
+        // // Roles & Permissions (moved to dedicated private method for clarity)
         $this->shareRolesAndPermissions();
 
-        // API Docs (Scramble config)
-        Scramble::configure()
-            ->routes(fn (Route $route) => Str::startsWith($route->uri, 'api/'))
-            ->withDocumentTransformers(function (OpenApi $openApi) {
-                $openApi->secure(SecurityScheme::http('bearer'));
-            });
+        // // API Docs (Scramble config)
+        // Scramble::configure()
+        //     ->routes(fn (Route $route) => Str::startsWith($route->uri, 'api/'))
+        //     ->withDocumentTransformers(function (OpenApi $openApi) {
+        //         $openApi->secure(SecurityScheme::http('bearer'));
+        //     });
 
-        // 🔹 Gates
+        // // 🔹 Gates
         Gate::define('viewPulse', fn (User $user) => $user->is_admin);
 
-        // 🔹 Observers
+        // // 🔹 Observers
         OrderUpdateLog::observe(OrderUpdateLogObserver::class);
     }
 
