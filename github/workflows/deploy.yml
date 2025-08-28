@@ -19,6 +19,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.3
+          tools: composer:v2
           extensions: mbstring, bcmath, intl, mysql
 
       # Node setup
@@ -26,10 +27,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      
+      # Create bootstrap/cache BEFORE composer install
+      - name: Ensure bootstrap/cache exists
+        run: |
+          mkdir -p bootstrap/cache
+          chmod -R 775 bootstrap/cache
+
 
       # Install composer deps
       - name: Install Composer dependencies
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+        
 
       # Install npm deps & build assets
       - name: Install NPM dependencies
